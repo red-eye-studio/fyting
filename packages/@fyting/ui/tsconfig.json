@@ -1,0 +1,17 @@
+{
+  "extends": "@res/tsconfig/web.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "paths": {
+      "~/*": ["./src/*"]
+    },
+  },
+  "include": [
+    "./src/**/*.ts",
+    "./src/**/*.vue",
+  ],
+  "exclude": [
+    "./dist"
+  ]
+}
