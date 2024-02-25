@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { trpc, useSubscription } from './server.js';
 
-const count = ref(0)
+const channels = useSubscription(trpc.discord.vc, { guildId: '467585733658542080' })
 </script>
 
 <template>
-  <div>
-    Count is {{ count }}
-    <button @click="count++">+</button>
-    <button @click="count--">-</button>
-  </div>
+  <ul>
+    <li v-for="channel in channels.data">
+      {{ channel.name }}
+    </li>
+  </ul>
 </template>

@@ -2,13 +2,15 @@
   "name": "@fyting/server",
   "version": "0.0.0",
   "type": "module",
+  "main": "./dist/main.js",
+  "types": "./dist/main.d.ts",
   "scripts": {
     "build": "tsup",
     "start": "node --enable-source-maps dist/main.js",
     "dev": "tsup --watch --onSuccess \"node dist/main.js\""
   },
   "dependencies": {
-    "@trpc/server": "^10.45.1",
+    "@trpc/server": "11.0.0-next-beta.294",
     "@types/ws": "^8.5.10",
     "better-sqlite3": "^9.4.3",
     "discord.js": "^14.14.1",

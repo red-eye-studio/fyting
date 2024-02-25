@@ -19,7 +19,7 @@ const server = createHTTPServer({
   },
 })
 
-const wss = new WebSocketServer({ server: server.server })
+const wss = new WebSocketServer({ server })
 
 applyWSSHandler({
   wss,
@@ -31,12 +31,12 @@ applyWSSHandler({
 
 export async function start() {
   server.listen(APP_PORT)
-  await once(server.server, 'listening')
+  await once(server, 'listening')
 }
 
 export async function stop() {
   await new Promise<void>((resolve, reject) => {
-    server.server.close((error) => {
+    server.close((error) => {
       if (error) {
         reject(error)
       } else {

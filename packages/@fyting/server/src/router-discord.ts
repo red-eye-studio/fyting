@@ -6,14 +6,14 @@ import { t } from './trpc.js'
 
 export const discord = t.router({
   vc: t.procedure.input(z.object({ guildId: z.string() })).subscription((options) =>
-    observable((observer) => {
+    observable<{ id: string; name: string; members: string[] }[]>((observer) => {
       client.guilds
         .fetch(options.input.guildId)
         .then((guild) => guild.channels.fetch())
         .then((channels) =>
           channels
             .filter((channel) => channel?.type === ChannelType.GuildVoice)
-            .map((channel) => ({ id: channel?.id, name: channel?.name, members: [] }))
+            .map((channel) => ({ id: channel!.id, name: channel!.name, members: [] }))
         )
         .then((channels) => observer.next(channels))
 

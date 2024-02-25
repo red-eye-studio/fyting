@@ -14,6 +14,8 @@ import { start as startDiscord, stop as stopDiscord } from './service-discord.js
 import { start as startDrizzle, stop as stopDrizzle } from './service-drizzle.js'
 import { start as startTRPC, stop as stopTRPC } from './service-trpc.js'
 
+export type { Router } from './service-trpc.js'
+
 async function handleError(error?: unknown) {
   if (error) {
     process.exitCode = 1
