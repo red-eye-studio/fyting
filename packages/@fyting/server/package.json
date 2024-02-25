@@ -4,7 +4,21 @@
   "type": "module",
   "scripts": {
     "build": "tsup",
-    "start": "node dist/main.js",
+    "start": "node --enable-source-maps dist/main.js",
     "dev": "tsup --watch --onSuccess \"node dist/main.js\""
+  },
+  "dependencies": {
+    "@trpc/server": "^10.45.1",
+    "@types/ws": "^8.5.10",
+    "better-sqlite3": "^9.4.3",
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.29.4",
+    "ws": "^8.16.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.9",
+    "drizzle-kit": "^0.20.14"
   }
 }

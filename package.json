@@ -10,7 +10,6 @@
     "node": ">=20"
   },
   "devDependencies": {
-    "@res/eslint-config": "workspace:*",
     "@res/tsconfig": "workspace:*",
     "@types/node": "^20.11.20",
     "prettier": "^3.2.5",
