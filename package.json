@@ -1,0 +1,21 @@
+{
+  "name": "fyting",
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+    "start:fyting": "pnpm --filter=@fyting/server start"
+  },
+  "packageManager": "pnpm@8.9.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@res/eslint-config": "workspace:*",
+    "@res/tsconfig": "workspace:*",
+    "@types/node": "^20.11.20",
+    "prettier": "^3.2.5",
+    "tsup": "^8.0.2",
+    "turbo": "latest",
+    "typescript": "^5.3.3"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "@fyting/server",
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsup",
+    "start": "node dist/main.js",
+    "dev": "tsup --watch --onSuccess \"node dist/main.js\""
+  }
+}
