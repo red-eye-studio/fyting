@@ -3,7 +3,12 @@ import { on } from 'node:events'
 import { from } from 'rxjs'
 import { z } from 'zod'
 import { client } from './discord.js'
+import { fastify } from './fastify.js'
 import { t } from './trpc.js'
+
+fastify.get('/login/discord/callback', async (request, reply) => {
+  const { token } = await fastify.oauth2Discord.getAccessTokenFromAuthorizationCodeFlow(request)
+})
 
 async function* vc({ guildId }: { guildId: string }) {
   const channels: {
@@ -28,11 +33,8 @@ async function* vc({ guildId }: { guildId: string }) {
     Object.assign(
       channels[channelId]!.members,
       Object.fromEntries(
-        Array.from(channel.members).map(([key, value]) => [
-          key,
-          { name: value.nickname || value.displayName },
-        ])
-      )
+        Array.from(channel.members).map(([key, value]) => [key, { name: value.nickname || value.displayName }]),
+      ),
     )
   }
 
@@ -55,11 +57,8 @@ async function* vc({ guildId }: { guildId: string }) {
         Object.assign(
           channels[channel.id]!.members,
           Object.fromEntries(
-            Array.from(channel.members).map(([key, value]) => [
-              key,
-              { name: value.nickname || value.displayName },
-            ])
-          )
+            Array.from(channel.members).map(([key, value]) => [key, { name: value.nickname || value.displayName }]),
+          ),
         )
       }
 
@@ -71,7 +70,5 @@ async function* vc({ guildId }: { guildId: string }) {
 }
 
 export const discord = t.router({
-  vc: t.procedure
-    .input(z.object({ guildId: z.string() }))
-    .subscription((options) => from(vc(options.input))),
+  vc: t.procedure.input(z.object({ guildId: z.string() })).subscription((options) => from(vc(options.input))),
 })

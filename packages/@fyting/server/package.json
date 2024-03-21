@@ -2,22 +2,26 @@
   "name": "@fyting/server",
   "version": "0.0.0",
   "type": "module",
-  "main": "./dist/main.js",
-  "types": "./dist/main.d.ts",
+  "main": "./dist/fyting.js",
+  "types": "./dist/fyting.d.ts",
   "scripts": {
-    "build": "tsup",
-    "start": "node --enable-source-maps dist/main.js",
-    "dev": "tsup --watch --onSuccess \"node dist/main.js\""
+    "build": "tsup src/fyting.ts",
+    "start": "node --enable-source-maps dist/fyting.js",
+    "dev": "tsup src/fyting.ts --watch --onSuccess \"node dist/fyting.js\""
   },
   "dependencies": {
+    "@fastify/cookie": "^9.3.1",
+    "@fastify/oauth2": "^7.8.0",
+    "@fastify/session": "^10.7.0",
+    "@fastify/websocket": "^10.0.1",
     "@trpc/server": "11.0.0-next-beta.294",
     "@types/ws": "^8.5.10",
     "better-sqlite3": "^9.4.3",
     "discord.js": "^14.14.1",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.29.4",
+    "fastify": "^4.26.2",
     "rxjs": "^7.8.1",
-    "ws": "^8.16.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
