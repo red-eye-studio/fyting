@@ -4,6 +4,9 @@ import { fastifySession, type FastifySessionOptions } from '@fastify/session'
 import { fastifyWebsocket, type WebsocketPluginOptions } from '@fastify/websocket'
 import { fastifyTRPCPlugin, type FastifyTRPCPluginOptions } from '@trpc/server/adapters/fastify'
 import { OAuth2Scopes } from 'discord.js'
+import { eq } from 'drizzle-orm'
+import { Session } from './drizzle-schema.js'
+import { db } from './drizzle.js'
 import {
   API_HOST,
   API_PORT,
@@ -12,6 +15,7 @@ import {
   DISCORD_OAUTH2_CLIENT_SECRET,
 } from './environment.js'
 import { fastify } from './fastify.js'
+import { tid, type TypedId } from './tid.js'
 import { createContext, router, type Router } from './trpc-service.js'
 
 declare module 'fastify' {
@@ -30,6 +34,51 @@ export async function start() {
     cookie: {
       secure: 'auto',
     },
+    idGenerator: () => tid('session', 48),
+    store: {
+      get: (id, callback) => {
+        try {
+          const session = db
+            .select({ data: Session.data })
+            .from(Session)
+            .where(eq(Session.id, id as TypedId<'session'>))
+            .get()
+
+          callback(null, session?.data)
+        } catch (error) {
+          callback(error)
+        }
+      },
+      set: (id, session, callback) => {
+        try {
+          db.insert(Session)
+            .values({ id: id as TypedId<'session'>, data: session })
+            .onConflictDoUpdate({
+              target: [Session.id],
+              set: {
+                data: session,
+                updatedAt: new Date(),
+              },
+            })
+            .run()
+
+          callback()
+        } catch (error) {
+          callback(error)
+        }
+      },
+      destroy: (id, callback) => {
+        try {
+          db.delete(Session)
+            .where(eq(Session.id, id as TypedId<'session'>))
+            .run()
+
+          callback()
+        } catch (error) {
+          callback(error)
+        }
+      },
+    },
   } satisfies FastifySessionOptions)
 
   await fastify.register(fastifyOauth2, {
@@ -43,8 +92,8 @@ export async function start() {
       },
       auth: fastifyOauth2.DISCORD_CONFIGURATION,
     },
-    startRedirectPath: '/login/discord',
-    callbackUri: `${API_HOST}/login/discord/callback`,
+    startRedirectPath: '/oauth2/discord/login',
+    callbackUri: `${API_HOST}/oauth2/discord/callback`,
   } satisfies FastifyOAuth2Options)
 
   await fastify.register(fastifyTRPCPlugin, {

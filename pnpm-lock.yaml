@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  discord.js@14.14.1:
+    hash: 7eddxagxmme55dnr7uqvjkzkje
+    path: patches/discord.js@14.14.1.patch
+
 importers:
 
   .:
@@ -35,6 +40,9 @@ importers:
 
   packages/@fyting/server:
     dependencies:
+      '@discordjs/rest':
+        specifier: ^2.2.0
+        version: 2.2.0
       '@fastify/cookie':
         specifier: ^9.3.1
         version: 9.3.1
@@ -56,9 +64,15 @@ importers:
       better-sqlite3:
         specifier: ^9.4.3
         version: 9.4.3
+      core-js:
+        specifier: ^3.36.1
+        version: 3.36.1
+      discord-api-types:
+        specifier: ^0.37.76
+        version: 0.37.76
       discord.js:
         specifier: ^14.14.1
-        version: 14.14.1
+        version: 14.14.1(patch_hash=7eddxagxmme55dnr7uqvjkzkje)
       dotenv:
         specifier: ^16.4.5
         version: 16.4.5
@@ -1341,6 +1355,11 @@ packages:
       is-what: 4.1.16
     dev: true
 
+  /core-js@3.36.1:
+    resolution: {integrity: sha512-BTvUrwxVBezj5SZ3f10ImnX2oRByMxql3EimVqMysepbC9EeMUOpLwdy6Eoili2x6E4kf+ZUB5k/+Jv55alPfA==}
+    requiresBuild: true
+    dev: false
+
   /cross-spawn@7.0.3:
     resolution: {integrity: sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w==}
     engines: {node: '>= 8'}
@@ -1409,7 +1428,11 @@ packages:
     resolution: {integrity: sha512-o/dXNFfhBpYHpQFdT6FWzeO7pKc838QeeZ9d91CfVAtpr5XLK4B/zYxQbYgPdoMiTDvJfzcsLW5naXgmHGDNXw==}
     dev: false
 
-  /discord.js@14.14.1:
+  /discord-api-types@0.37.76:
+    resolution: {integrity: sha512-GQI02JvBVl9+WQiMmyc/OFuJ4bBBf2VWb6NjPBnzrrdF2D/2S07mA1ZCd5+IhHRjU8wQ83c/hmjj9nn1+r/K9g==}
+    dev: false
+
+  /discord.js@14.14.1(patch_hash=7eddxagxmme55dnr7uqvjkzkje):
     resolution: {integrity: sha512-/hUVzkIerxKHyRKopJy5xejp4MYKDPTszAnpYxzVVv4qJYf+Tkt+jnT2N29PIPschicaEEpXwF2ARrTYHYwQ5w==}
     engines: {node: '>=16.11.0'}
     dependencies:
@@ -1431,6 +1454,7 @@ packages:
       - bufferutil
       - utf-8-validate
     dev: false
+    patched: true
 
   /dotenv@16.4.5:
     resolution: {integrity: sha512-ZmdL2rui+eB2YwhsWzjInR8LldtZHGDoQ1ugH85ppHKwpUHL7j7rN0Ti9NCnGiQbhaZ11FpR+7ao1dNsmduNUg==}

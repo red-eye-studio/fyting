@@ -1,74 +1,129 @@
-import { ChannelType } from 'discord.js'
+import { TRPCError } from '@trpc/server'
+import { and, eq } from 'drizzle-orm'
 import { on } from 'node:events'
-import { from } from 'rxjs'
 import { z } from 'zod'
+import { subscription } from './async-iterable.js'
+import { api } from './discord-api.js'
 import { client } from './discord.js'
+import { Session, Token, User } from './drizzle-schema.js'
+import { db } from './drizzle.js'
 import { fastify } from './fastify.js'
-import { t } from './trpc.js'
+import { tid, type TypedId } from './tid.js'
+import { t, type Context } from './trpc.js'
 
-fastify.get('/login/discord/callback', async (request, reply) => {
-  const { token } = await fastify.oauth2Discord.getAccessTokenFromAuthorizationCodeFlow(request)
+const DiscordTokenResponse = z.object({
+  access_token: z.string(),
+  token_type: z.literal('Bearer'),
+  expires_in: z.number().min(0),
+  refresh_token: z.string(),
+  scope: z.string().transform((scope) => scope.split(' ')),
 })
 
-async function* vc({ guildId }: { guildId: string }) {
-  const channels: {
-    [channelId: string]: {
-      name: string
-      members: {
-        [memberId: string]: {
-          name: string
-        }
-      }
+export type DiscordToken = z.infer<typeof DiscordTokenResponse>
+
+fastify.get('/oauth2/discord/callback', async (request, _reply) => {
+  const { token } = await fastify.oauth2Discord.getAccessTokenFromAuthorizationCodeFlow(request)
+  const credentials = DiscordTokenResponse.parse(token)
+  const info = await api('get', 'user', credentials.access_token, '@me')
+
+  db.transaction<void>((tx) => {
+    let userId: TypedId<'user'>
+
+    const token = tx
+      .update(Token)
+      .set({
+        accessToken: credentials.access_token,
+        tokenType: credentials.token_type,
+        expiresIn: credentials.expires_in,
+        refreshToken: credentials.refresh_token,
+        scope: credentials.scope,
+
+        updatedAt: new Date(),
+      })
+      .where(and(eq(Token.provider, 'discord'), eq(Token.providerId, info.id)))
+      .returning({ userId: Token.userId })
+      .get()
+
+    userId = token?.userId
+
+    if (!userId) {
+      const user = tx
+        .insert(User)
+        .values({ id: tid('user') })
+        .returning({ id: User.id })
+        .get()
+
+      tx.insert(Token)
+        .values({
+          id: tid('token'),
+          userId: user.id,
+
+          provider: 'discord',
+          providerId: info.id,
+
+          accessToken: credentials.access_token,
+          tokenType: credentials.token_type,
+          expiresIn: credentials.expires_in,
+          refreshToken: credentials.refresh_token,
+          scope: credentials.scope,
+        })
+        .run()
+
+      userId = user.id
     }
-  } = {}
 
-  const guild = await client.guilds.fetch(guildId)
+    tx.update(Session)
+      .set({ userId })
+      .where(eq(Session.id, request.session.sessionId as TypedId<'session'>))
+      .run()
+  })
+})
 
-  for (const [channelId, channel] of await guild.channels.fetch()) {
-    if (channel?.type !== ChannelType.GuildVoice) {
-      continue
-    }
+const authenticated = t.procedure.use(async (ops) => {
+  console.log(ops)
 
-    channels[channelId] ??= { name: channel.name, members: {} }
-    Object.assign(
-      channels[channelId]!.members,
-      Object.fromEntries(
-        Array.from(channel.members).map(([key, value]) => [key, { name: value.nickname || value.displayName }]),
-      ),
+  const token = db
+    .select({
+      access_token: Token.accessToken,
+      refresh_token: Token.refreshToken,
+      expires_in: Token.expiresIn,
+      token_type: Token.tokenType,
+      scope: Token.scope,
+    })
+    .from(Token)
+    .where(
+      eq(Token.userId, db.select({ userId: Session.userId }).from(Session).where(eq(Session.id, ops.ctx.sessionId))),
     )
+    .get()
+
+  console.log(token)
+
+  if (!token) {
+    throw new TRPCError({ code: 'UNAUTHORIZED' })
   }
 
-  yield channels
+  return ops.next({
+    ctx: {
+      ...ops.ctx,
+      discord: {
+        info: await api('get', 'user', token.access_token, '@me'),
+        token: token,
+      },
+    },
+  })
+})
 
-  for await (const [oldState, newState] of on(client, 'voiceStateUpdate')) {
-    if (oldState.channelId && channels[oldState.channelId] && oldState.member) {
-      delete channels[oldState.channelId]!.members[oldState.member.id]
-    }
-
-    if (newState.channelId && newState.member) {
-      if (!channels[newState.channelId]) {
-        const channel = await guild.channels.fetch(newState.channelId)
-
-        if (!channel || channel.type !== ChannelType.GuildVoice) {
-          continue
-        }
-
-        channels[channel.id] ??= { name: channel.name, members: {} }
-        Object.assign(
-          channels[channel.id]!.members,
-          Object.fromEntries(
-            Array.from(channel.members).map(([key, value]) => [key, { name: value.nickname || value.displayName }]),
-          ),
-        )
-      }
-
-      channels[newState.channelId]!.members[newState.member.id] = {
-        name: newState.member.nickname || newState.member.displayName,
-      }
+async function* voiceStateUpdate(_input: undefined, context: Context, signal: AbortSignal) {
+  for await (const [oldState, newState] of on(client, 'voiceStateUpdate', { signal })) {
+    if (
+      oldState.channel!.members.has(context.discord!.info.id) ||
+      newState.channel!.members.has(context.discord!.info.id)
+    ) {
+      yield [oldState, newState]
     }
   }
 }
 
 export const discord = t.router({
-  vc: t.procedure.input(z.object({ guildId: z.string() })).subscription((options) => from(vc(options.input))),
+  voiceStateUpdate: authenticated.subscription(subscription(voiceStateUpdate)),
 })

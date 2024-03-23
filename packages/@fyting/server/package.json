@@ -5,11 +5,12 @@
   "main": "./dist/fyting.js",
   "types": "./dist/fyting.d.ts",
   "scripts": {
-    "build": "tsup src/fyting.ts",
+    "build": "tsup src/fyting.ts --dts --sourcemap",
     "start": "node --enable-source-maps dist/fyting.js",
-    "dev": "tsup src/fyting.ts --watch --onSuccess \"node dist/fyting.js\""
+    "dev": "tsup src/fyting.ts --dts --sourcemap --watch --onSuccess \"node --enable-source-maps dist/fyting.js\""
   },
   "dependencies": {
+    "@discordjs/rest": "^2.2.0",
     "@fastify/cookie": "^9.3.1",
     "@fastify/oauth2": "^7.8.0",
     "@fastify/session": "^10.7.0",
@@ -17,6 +18,8 @@
     "@trpc/server": "11.0.0-next-beta.294",
     "@types/ws": "^8.5.10",
     "better-sqlite3": "^9.4.3",
+    "core-js": "^3.36.1",
+    "discord-api-types": "^0.37.76",
     "discord.js": "^14.14.1",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.29.4",

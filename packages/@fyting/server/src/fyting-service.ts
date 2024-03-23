@@ -1,3 +1,4 @@
+import 'core-js/actual/async-iterator/filter.js'
 import 'dotenv/config.js'
 
 import { start as startDiscord, stop as stopDiscord } from './discord-service.js'

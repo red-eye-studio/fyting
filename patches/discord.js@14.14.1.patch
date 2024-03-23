@@ -1,0 +1,21 @@
+diff --git a/typings/index.d.ts b/typings/index.d.ts
+index ed748734de3859ac50d8683a8ec74349b12485d4..8b6f0a308bd511321257cd270ff7f9217e587d56 100644
+--- a/typings/index.d.ts
++++ b/typings/index.d.ts
+@@ -239,10 +239,16 @@ declare module 'node:events' {
+     public static once<Emitter extends EventEmitter, Event extends keyof ClientEvents>(
+       eventEmitter: Emitter,
+       eventName: Emitter extends Client ? Event : string,
++      options?: { 
++        signal?: AbortSignal | undefined;
++      },
+     ): Promise<Emitter extends Client ? ClientEvents[Event] : any[]>;
+     public static on<Emitter extends EventEmitter, Events extends keyof ClientEvents>(
+       eventEmitter: Emitter,
+       eventName: Emitter extends Client ? Events : string,
++      options?: { 
++        signal?: AbortSignal | undefined;
++      },
+     ): AsyncIterableIterator<Emitter extends Client ? ClientEvents[Events] : any>;
+   }
+ }

@@ -5,12 +5,8 @@
     "outDir": "./dist",
     "paths": {
       "~/*": ["./src/*"]
-    },
+    }
   },
-  "include": [
-    "./src/**/*.ts",
-  ],
-  "exclude": [
-    "./dist"
-  ]
+  "include": ["./types/**/*.d.ts", "./src/**/*.ts"],
+  "exclude": ["./dist"]
 }

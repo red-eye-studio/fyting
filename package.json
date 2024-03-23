@@ -18,5 +18,10 @@
     "typescript": "^5.3.3",
     "vite": "^5.1.4",
     "vue-tsc": "^1.8.27"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "discord.js@14.14.1": "patches/discord.js@14.14.1.patch"
+    }
   }
 }

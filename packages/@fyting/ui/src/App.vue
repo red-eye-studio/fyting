@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { trpc, useSubscription } from './server.js';
 
-const channels = useSubscription(trpc.discord.vc, { guildId: '467585733658542080' })
+const channels = useSubscription(trpc.discord.voiceStateUpdate, undefined)
 </script>
 
 <template>
   <ul>
     <li v-for="channel in channels.data">
-      {{ channel.name }}
+      {{ channel }}
     </li>
   </ul>
 </template>
